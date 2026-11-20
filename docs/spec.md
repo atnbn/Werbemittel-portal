@@ -25,6 +25,9 @@ Felder ändern können, die die Zentrale freigegeben hat.
 | Werbekostenzuschuss | subsidy       | Anteil der Kosten, der vom Guthaben abgebucht wird                               |
 | Eigenanteil         | ownShare      | Rest, den der Partner selbst zahlt                                               |
 | Bestellstatus       | OrderStatus   | BESTELLT, IN_PRODUKTION, VERSENDET (Enum-Werte bleiben deutsch, da Fachbegriffe) |
+| Rolle               | Role          | PARTNER, ZENTRALE                                                                |
+| Vorlagentyp         | TemplateType  | FLYER, POSTER, NEWSPAPER_AD                                                      |
+| Feldtyp             | FieldType     | FIXED, PARTNER_DATA, EDITABLE                                                    |
 
 ## 4. Feldtypen einer Vorlage
 
@@ -57,6 +60,14 @@ Tests referenzieren die ID im Testnamen (z. B. `ak3_...`).
 
 - AK-1: Given eingeloggt (beliebige Rolle), When ich `GET /api/templates` aufrufe, Then erhalte ich alle Vorlagen mit ihren Feldern.
 - AK-2: Given nicht eingeloggt, When ich einen beliebigen `/api`-Endpunkt aufrufe, Then 401.
+- AK-19: Given eingeloggt (beliebige Rolle), When ich `GET /api/templates/{id}` mit einer bestehenden `id` aufrufe,
+  Then 200 und die Vorlage mit ihren Feldern; When die `id` unbekannt ist, Then 404.
+
+**Benutzer**
+
+- AK-20: Given eingeloggt (beliebige Rolle), When ich `GET /api/me` aufrufe, Then 200 mit `username` und `role` des angemeldeten Benutzers.
+- AK-21: Given eingeloggt als PARTNER, When ich `GET /api/partners/me` aufrufe, Then 200 mit den eigenen Stammdaten und dem Guthaben (`balanceCents`).
+  Given eingeloggt als ZENTRALE, When ich `GET /api/partners/me` aufrufe, Then 403.
 
 **Bestellen**
 
@@ -107,6 +118,8 @@ VERSENDET ist Endzustand. Alle anderen Übergänge → 409.
 ## 9. REST-Schnittstellen
 
 Basis `/api`, HTTP Basic, JSON, Fehler als Problem Details (RFC 9457).
+Auch 401 und 403 werden als Problem Details geliefert. Ein `WWW-Authenticate`-Header wird nicht gesendet,
+damit der Browser keinen eigenen Login-Dialog öffnet.
 **Es gibt ausschließlich diese Endpunkte. Neue Endpunkte nur nach Änderung dieser Spec.**
 
 | Methode | Pfad                    | Rolle                           | Erfolg                 | Fehler                  |
@@ -181,6 +194,8 @@ Basis `/api`, HTTP Basic, JSON, Fehler als Problem Details (RFC 9457).
 }
 ```
 
+Listen von Vorlagen sind nach `id` sortiert, `fields` nach `position`.
+
 ### POST /api/orders – Request
 
 ```json
@@ -242,6 +257,24 @@ Tests prüfen `status` und `detail`, nicht `title`.
 - Nutzer: `zentrale`, `partner1` (Guthaben 100,00 €), `partner2` (Guthaben 5,00 €)
 - Passwort für alle Demo-Nutzer: `demo` (nur für die lokale Demo, gespeichert als BCrypt-Hash)
 - 3 Vorlagen: Flyer, Plakat, Zeitungsanzeige, je mit mind. einem Feld jedes Typs
+- Stammdaten:
+  - partner1: Autohaus Müller, Hauptstr. 1, 96106 Ebern, 09531 12345, Guthaben 10.000 Cent
+  - partner2: Fahrrad Schmidt, Bahnhofstr. 5, 96047 Bamberg, 0951 98765, Guthaben 500 Cent
+- Vorlagen (Felder in der Reihenfolge von `position`, beginnend bei 1):
+  - 1 „Flyer Frühling“, FLYER, 12 Cent, 50 %:
+    - claim „Marken-Claim“ (FIXED, „Gemeinsam mehr erreichen.“)
+    - companyName „Firmenname“ (PARTNER_DATA → companyName)
+    - headline „Überschrift“ (EDITABLE, „Jetzt vorbeikommen!“, max 40)
+  - 2 „Plakat Sommer“, POSTER, 250 Cent, 40 %:
+    - claim „Marken-Claim“ (FIXED, „Gemeinsam mehr erreichen.“)
+    - companyName „Firmenname“ (PARTNER_DATA → companyName)
+    - phone „Telefon“ (PARTNER_DATA → phone)
+    - headline „Überschrift“ (EDITABLE, „Sommerangebote“, max 30)
+  - 3 „Zeitungsanzeige Herbst“, NEWSPAPER_AD, 4.900 Cent, 30 %:
+    - claim „Marken-Claim“ (FIXED, „Gemeinsam mehr erreichen.“)
+    - companyName „Firmenname“ (PARTNER_DATA → companyName)
+    - city „Ort“ (PARTNER_DATA → city)
+    - offer „Angebotstext“ (EDITABLE, „Jetzt Termin vereinbaren.“, max 60)
 
 ## 11. Nicht im Umfang
 
