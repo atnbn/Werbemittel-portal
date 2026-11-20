@@ -5,9 +5,15 @@ Datum: 2026-11-21
 
 ## Kontext
 
-TODO: 3–4 Sätze. Was wird gebaut (Verweis auf docs/spec.md), welche Rahmenbedingungen
-gelten (ca. 2,5 Tage, Code wird von einem Coding-Agenten geschrieben und von mir
-gesteuert und geprüft, Ziel ist eine lauffähige Demo).
+Gebaut wird eine Miniatur eines Local-Marketing-Portals: Eine Markenzentrale stellt
+Werbemittel-Vorlagen bereit, Vertriebspartner personalisieren und bestellen sie, und
+ein Werbekostenzuschuss wird von ihrem Guthaben abgebucht. Die fachlichen Anforderungen
+stehen in `docs/spec.md`.
+
+Rahmenbedingungen: Für die Umsetzung stehen etwa 2,5 Tage zur Verfügung. Der Code wird
+von einem Coding-Agenten (Claude Code) geschrieben; ich spezifiziere, steuere und prüfe
+das Ergebnis über Tests und Code-Review. Ziel ist eine vollständig lauffähige Demo mit
+automatisierten Tests und CI, nicht ein produktionsreifes System.
 
 ## Entscheidungen
 
@@ -65,7 +71,7 @@ Begründung:
 
 - Kein Setup: Die Anwendung und alle Integrationstests laufen ohne externe Datenbank
   und ohne Docker, lokal wie in der CI.
-- Jeder
+- Jeder Start beginnt mit einem bekannten Datenstand, was Demo und Tests reproduzierbar macht.
 
 ### 4. Authentifizierung: HTTP Basic statt JWT
 
@@ -182,7 +188,7 @@ deutsch, da sie Fachbegriffe sind und unverändert in der API und im UI erschein
 - HTTPS und tokenbasierte Anmeldung oder Single Sign-on statt HTTP Basic.
 - Optimistic Locking (`@Version`) auf `Partner`, damit parallele Abbuchungen erkannt werden.
 
-## Verworfene Alternativen (Backend)
+## Verworfene Alternativen
 
 | Alternative                           | Warum verworfen                                                                                                                  |
 | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -193,3 +199,4 @@ deutsch, da sie Fachbegriffe sind und unverändert in der API und im UI erschein
 | Logik im Controller                   | Nicht isoliert testbar, verletzt Single Responsibility, wird bei jedem Feature unübersichtlicher.                                |
 | Angular                               | Im Java-Umfeld verbreitet, aber für den Umfang schwergewichtig                                                                   |
 | Server-Side-Rendering (z. B. Next.js) | Kein Bedarf an SEO oder Server-Rendering für ein internes Portal; zusätzliche Komplexität.                                       |
+| Freigabe-Workflow durch die Zentrale  | Skaliert bei vielen Partnern schlecht und verzögert Bestellungen; siehe Entscheidung 5.                                          |
