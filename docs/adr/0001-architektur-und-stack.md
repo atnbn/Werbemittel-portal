@@ -122,7 +122,10 @@ Begründung:
 ### 7. Schichtenarchitektur: Controller → Service → Domain / Repository
 
 Das Backend ist nach Fachmodulen gegliedert (`template`, `order`, `partner`, `security`),
-innerhalb jedes Moduls in Schichten:
+innerhalb jedes Moduls in Schichten. Daneben gibt es `common` (fachliche Exceptions,
+zentrale Fehlerabbildung), das von keinem Fachmodul abhängt, und `seed`, das die Seed-Daten
+lädt, alle Fachmodule kennen darf und von keinem Modul verwendet wird. Fachmodule dürfen von
+`security` abhängen, `security` von keinem Fachmodul.
 
 | Schicht    | Verantwortung                                                                                                                 | Enthält keine                         |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |

@@ -43,7 +43,14 @@ nachfragen**, nicht raten.
 ## Backend (`backend/`)
 
 - Java 25, Spring Boot 4, Maven Wrapper. Basis-Package: `com.miniportal`.
-- Struktur pro Fachmodul (`template`, `order`, `partner`, `security`, `common`):
+- Fachmodule: `template`, `order`, `partner`, `security`.
+- `common`: Querschnitt (fachliche Exceptions, `@RestControllerAdvice`). Hängt von keinem Fachmodul ab.
+- `seed`: lädt die Seed-Daten (Spec, Abschnitt 10). Darf alle Fachmodule kennen; kein Modul hängt von `seed` ab.
+- Abhängigkeitsrichtung: Fachmodule dürfen von `security` abhängen, `security` von keinem
+  Fachmodul. Deshalb speichert `User` nur die `partnerId` (keine JPA-Beziehung zu `Partner`).
+  Controller holen den angemeldeten Benutzer per `@AuthenticationPrincipal` und geben
+  `partnerId` an den Service weiter.
+- Struktur pro Fachmodul:
   - `XxxController`: nur HTTP, Mapping auf DTOs, `@Valid`
   - `XxxService`: Ablauf, `@Transactional`, Zugriffsprüfung auf Datenebene
   - Domain-Klassen (`OrderStatus`, `PriceCalculator`, `TemplateValueValidator`):
@@ -67,6 +74,7 @@ nachfragen**, nicht raten.
   `ak7_orderIsRejectedWhenBalanceIsInsufficient`.
 - Domain-Regeln: Unit-Tests mit JUnit 5 und AssertJ, ohne Spring-Kontext.
 - Endpunkte, Rollen, Fehlercodes: Integrationstests mit `@SpringBootTest` und MockMvc.
+- Integrationstests sind `@Transactional`: Jeder Test wird zurückgerollt und startet mit den Seed-Daten.
 - Bei Fehlerantworten `status` und `detail` prüfen, nicht `title`.
 
 ## Befehle

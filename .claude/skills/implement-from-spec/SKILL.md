@@ -29,6 +29,9 @@ Halte dich an CLAUDE.md. Arbeite die Phasen strikt nacheinander ab und
 
 **→ Anhalten. Warte auf meine Freigabe.**
 
+5. Lege den freigegebenen Plan inklusive meiner Änderungen als `docs/plans/<Feature>.md`
+   ab (z. B. `docs/plans/F2.md`), bevor Phase 3 beginnt.
+
 ## Phase 3 – Tests zuerst
 
 1. Schreibe die geplanten Tests.
