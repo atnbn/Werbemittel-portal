@@ -280,6 +280,30 @@ Tests prüfen `status` und `detail`, nicht `title`.
     - city „Ort“ (PARTNER_DATA → city)
     - offer „Angebotstext“ (EDITABLE, „Jetzt Termin vereinbaren.“, max 60)
 
-## 11. Nicht im Umfang
+## 11. Frontend
+
+React + TypeScript + Vite (ADR, Entscheidung 2). Nutzt ausschließlich die Endpunkte aus Abschnitt 9.
+Zugangsdaten liegen nur im Speicher (kein localStorage); nach einem Reload ist eine neue Anmeldung nötig.
+Beträge werden aus Cent als Euro im Format de-DE angezeigt (z. B. 6000 → „60,00 €“).
+
+### Akzeptanzkriterien
+
+- UI-1 Login: Given die Login-Seite, When ich gültige Zugangsdaten eingebe, Then prüft die App sie über `GET /api/me` und zeigt für PARTNER den Katalog, für ZENTRALE die Bestellübersicht. Bei 401 erscheint „Anmeldung fehlgeschlagen.“
+- UI-2 Katalog: Given PARTNER, When der Katalog lädt, Then sehe ich alle Vorlagen mit Name, Typ, Stückpreis und Zuschussquote sowie mein Guthaben.
+- UI-3 Editor: Given PARTNER öffnet eine Vorlage, Then werden FIXED-Felder und PARTNER_DATA-Felder (aus `GET /api/partners/me`) schreibgeschützt angezeigt und EDITABLE-Felder als Eingabe mit maxLength und Zeichenzähler.
+- UI-4 Live-Vorschau: Given der Editor, When ich ein EDITABLE-Feld ändere, Then aktualisiert sich die Vorschau des Werbemittels sofort mit allen Feldwerten in der Reihenfolge von `position`.
+- UI-5 Preisvorschau: Given der Editor, When ich die Menge ändere, Then sehe ich Gesamtpreis, Zuschuss und Eigenanteil nach Abschnitt 5. Ist das Guthaben kleiner als der Zuschuss, erscheint ein Hinweis. Verbindlich ist die Berechnung des Servers.
+- UI-6 Bestellen: Given gültige Eingaben, When ich bestelle, Then wird `POST /api/orders` gesendet; bei 201 erscheint die Bestellung unter „Meine Bestellungen“, bei einem Fehler wird `detail` der Antwort angezeigt.
+- UI-7 Meine Bestellungen: Given PARTNER, Then sehe ich meine Bestellungen mit Vorlage, Menge, Status, Zuschuss und Eigenanteil.
+- UI-8 Bestellübersicht Zentrale: Given ZENTRALE, Then sehe ich alle Bestellungen mit Firmenname (aus dem Snapshot), Vorlage, Status und Beträgen. Pro Bestellung gibt es nur einen Button für den nächsten erlaubten Status (Abschnitt 7); bei VERSENDET keinen.
+- UI-9 Abmelden: Given angemeldet, When ich auf „Abmelden“ klicke, Then sind die Zugangsdaten gelöscht und die Login-Seite erscheint.
+
+### Tests
+
+- Reine Funktionen mit Vitest: Euro-Formatierung, Preisvorschau (Beispiele 1 und 2 aus Abschnitt 5), Zusammensetzen der Vorschau, nächster erlaubter Status.
+- Komponenten mit Vitest + Testing Library: UI-1, UI-4, UI-8.
+
+## 12. Nicht im Umfang
 
 Vorlagen anlegen per UI, Bild-/Logo-Upload, PDF-Export, Stornierung, Dienstleister-Anbindung, SSO.
+Im Frontend: Routing-Bibliothek, UI-Framework, Responsive-Optimierung, Persistenz der Anmeldung.
