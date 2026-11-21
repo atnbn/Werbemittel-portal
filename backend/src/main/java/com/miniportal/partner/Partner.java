@@ -1,5 +1,6 @@
 package com.miniportal.partner;
 
+import com.miniportal.common.InsufficientBalanceException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -65,5 +66,24 @@ public class Partner {
 
     public long getBalanceCents() {
         return balanceCents;
+    }
+
+    public void deductBalance(long cents) {
+        if (balanceCents < cents) {
+            throw new InsufficientBalanceException(
+                    "Guthaben reicht nicht für den Zuschuss von " + cents + " Cent.");
+        }
+        balanceCents -= cents;
+    }
+
+    public String getAttribute(String name) {
+        return switch (name) {
+            case "companyName" -> companyName;
+            case "street" -> street;
+            case "zip" -> zip;
+            case "city" -> city;
+            case "phone" -> phone;
+            default -> throw new IllegalArgumentException("Unbekanntes Partner-Attribut: " + name);
+        };
     }
 }

@@ -26,6 +26,7 @@ public class SecurityConfig {
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(HttpMethod.GET, "/api/partners/me").hasRole(Role.PARTNER.name())
+                        .requestMatchers(HttpMethod.POST, "/api/orders").hasRole(Role.PARTNER.name())
                         .anyRequest().authenticated())
                 .build();
     }
