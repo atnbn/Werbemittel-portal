@@ -95,7 +95,7 @@ Tests referenzieren die ID im Testnamen (z. B. `ak3_...`).
 - AK-14: Given ZENTRALE, When ein Übergang nicht in Abschnitt 7 steht (z. B. BESTELLT → VERSENDET), Then 409.
 - AK-15: Given PARTNER, When ich den Status ändern will, Then 403.
 - AK-17: Given ZENTRALE, When ich den Status einer unbekannten Bestellung ändern will, Then 404.
-- AK-18: Given ZENTRALE, When ich einen unbekannten Statuswert sende (z. B. `"FOO"`), Then 400.
+- AK-18: Given ZENTRALE, When ich einen unbekannten Statuswert sende (z. B. `"FOO"`) oder `status` fehlt, Then 400.
 
 ## 7. Statusmodell
 
@@ -233,12 +233,15 @@ Listen von Vorlagen sind nach `id` sortiert, `fields` nach `position`.
 ```
 
 `values` ist der Snapshot aller Feldwerte zum Bestellzeitpunkt (AK-8).
+Listen von Bestellungen sind nach `id` sortiert.
 
 ### PATCH /api/orders/{id}/status – Request
 
 ```json
 { "status": "IN_PRODUKTION" }
 ```
+
+Ein Statuswechsel setzt `updatedAt` auf den Zeitpunkt der Änderung.
 
 ### Fehler – Response (Beispiel)
 
