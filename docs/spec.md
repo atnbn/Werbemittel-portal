@@ -285,6 +285,7 @@ Tests prüfen `status` und `detail`, nicht `title`.
 React + TypeScript + Vite (ADR, Entscheidung 2). Nutzt ausschließlich die Endpunkte aus Abschnitt 9.
 Zugangsdaten liegen nur im Speicher (kein localStorage); nach einem Reload ist eine neue Anmeldung nötig.
 Beträge werden aus Cent als Euro im Format de-DE angezeigt (z. B. 6000 → „60,00 €“).
+Schlägt ein API-Aufruf fehl, zeigt die Seite `detail` aus der Fehlerantwort an. Ausnahme: 401 beim Login zeigt „Anmeldung fehlgeschlagen.“
 
 ### Akzeptanzkriterien
 
@@ -301,7 +302,7 @@ Beträge werden aus Cent als Euro im Format de-DE angezeigt (z. B. 6000 → „6
 ### Tests
 
 - Reine Funktionen mit Vitest: Euro-Formatierung, Preisvorschau (Beispiele 1 und 2 aus Abschnitt 5), Zusammensetzen der Vorschau, nächster erlaubter Status.
-- Komponenten mit Vitest + Testing Library: UI-1, UI-4, UI-8.
+- Komponenten mit Vitest + Testing Library: UI-1, UI-2, UI-4, UI-8, UI-9.
 
 ## 12. Nicht im Umfang
 

@@ -1,0 +1,68 @@
+import { useEffect, useState } from 'react';
+import type { ApiClient } from '../api/client.ts';
+import { errorDetail } from '../api/errorDetail.ts';
+import type { Partner, Template } from '../api/types.ts';
+import { formatCents } from '../format/money.ts';
+
+interface CatalogPageProps {
+  api: ApiClient;
+}
+
+interface CatalogData {
+  templates: Template[];
+  partner: Partner;
+}
+
+export function CatalogPage({ api }: CatalogPageProps) {
+  const [data, setData] = useState<CatalogData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([api.getTemplates(), api.getMyPartner()])
+      .then(([templates, partner]) => {
+        if (active) setData({ templates, partner });
+      })
+      .catch((e: unknown) => {
+        if (active) setError(errorDetail(e));
+      });
+    return () => {
+      active = false;
+    };
+  }, [api]);
+
+  return (
+    <section>
+      <h2>Katalog</h2>
+      {error ? (
+        <p role="alert">{error}</p>
+      ) : data === null ? (
+        <p>Lädt …</p>
+      ) : (
+        <>
+          <p>Guthaben: {formatCents(data.partner.balanceCents)}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Typ</th>
+                <th>Stückpreis</th>
+                <th>Zuschussquote</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.templates.map((template) => (
+                <tr key={template.id}>
+                  <td>{template.name}</td>
+                  <td>{template.type}</td>
+                  <td>{formatCents(template.unitPriceCents)}</td>
+                  <td>{`${template.subsidyPercent} %`}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+    </section>
+  );
+}
