@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -30,7 +31,7 @@ class SecurityTest {
     private MockMvc mockMvc;
 
     @ParameterizedTest
-    @ValueSource(strings = {"/api/me", "/api/partners/me", "/api/templates", "/api/templates/1", "/api/orders/1"})
+    @ValueSource(strings = {"/api/me", "/api/partners/me", "/api/templates", "/api/templates/1", "/api/orders", "/api/orders/1"})
     void ak2_unauthenticatedRequestIsRejected(String path) throws Exception {
         mockMvc.perform(get(path))
                 .andExpect(status().isUnauthorized())
@@ -45,6 +46,18 @@ class SecurityTest {
         mockMvc.perform(post("/api/orders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{ \"templateId\": 1, \"quantity\": 1 }"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.detail").value(UNAUTHORIZED_DETAIL))
+                .andExpect(header().doesNotExist(HttpHeaders.WWW_AUTHENTICATE));
+    }
+
+    @Test
+    void ak2_unauthenticatedStatusPatchIsRejected() throws Exception {
+        mockMvc.perform(patch("/api/orders/1/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"status\": \"IN_PRODUKTION\" }"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(401))

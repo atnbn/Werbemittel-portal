@@ -1,6 +1,7 @@
 package com.miniportal.order;
 
 import com.miniportal.partner.Partner;
+import java.time.Instant;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
@@ -14,4 +15,8 @@ interface TestDataChangeRepository extends Repository<Partner, Long> {
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("update TemplateField f set f.defaultValue = :defaultValue where f.template.id = :templateId and f.key = :key")
     int changeDefaultValue(Long templateId, String key, String defaultValue);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "update orders set updated_at = :updatedAt where id = :orderId", nativeQuery = true)
+    int changeUpdatedAt(Long orderId, Instant updatedAt);
 }

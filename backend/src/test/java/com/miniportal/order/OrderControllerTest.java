@@ -1,6 +1,7 @@
 package com.miniportal.order;
 
 import com.jayway.jsonpath.JsonPath;
+import java.time.Instant;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,10 +16,13 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -57,6 +61,23 @@ class OrderControllerTest {
 
     private ResultActions getOrder(String username, long orderId) throws Exception {
         return mockMvc.perform(get("/api/orders/{id}", orderId).with(httpBasic(username, PASSWORD)));
+    }
+
+    private ResultActions listOrders(String username) throws Exception {
+        return mockMvc.perform(get("/api/orders").with(httpBasic(username, PASSWORD)));
+    }
+
+    private ResultActions changeStatus(String username, long orderId, String body) throws Exception {
+        return mockMvc.perform(patch("/api/orders/{id}/status", orderId)
+                .with(httpBasic(username, PASSWORD))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body));
+    }
+
+    private void expectOrderStatus(long orderId, String status) throws Exception {
+        getOrder("zentrale", orderId)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(status));
     }
 
     private void expectBalance(String username, long balanceCents) throws Exception {
@@ -326,5 +347,183 @@ class OrderControllerTest {
 
         expectNothingSaved();
         expectBalance("partner1", 10_000);
+    }
+
+    @Test
+    void ak10_partnerGetsOnlyOwnOrders() throws Exception {
+        long firstOwnOrderId = placeOrderAndGetId("partner1", """
+                { "templateId": 1, "quantity": 500 }
+                """);
+        long foreignOrderId = placeOrderAndGetId("partner2", """
+                { "templateId": 1, "quantity": 1 }
+                """);
+        long secondOwnOrderId = placeOrderAndGetId("partner1", """
+                { "templateId": 2, "quantity": 10 }
+                """);
+
+        listOrders("partner1")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id").value(firstOwnOrderId))
+                .andExpect(jsonPath("$[1].id").value(secondOwnOrderId))
+                .andExpect(jsonPath("$[*].partnerId", everyItem(equalTo(1))))
+                .andExpect(jsonPath("$[0].*", hasSize(RESPONSE_FIELD_COUNT)));
+
+        listOrders("partner2")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(foreignOrderId))
+                .andExpect(jsonPath("$[0].partnerId").value(2));
+    }
+
+    @Test
+    void ak11_zentraleGetsAllOrders() throws Exception {
+        long firstOrderId = placeOrderAndGetId("partner1", """
+                { "templateId": 1, "quantity": 500 }
+                """);
+        long secondOrderId = placeOrderAndGetId("partner2", """
+                { "templateId": 1, "quantity": 1 }
+                """);
+        long thirdOrderId = placeOrderAndGetId("partner1", """
+                { "templateId": 2, "quantity": 10 }
+                """);
+
+        listOrders("zentrale")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[0].id").value(firstOrderId))
+                .andExpect(jsonPath("$[1].id").value(secondOrderId))
+                .andExpect(jsonPath("$[2].id").value(thirdOrderId))
+                .andExpect(jsonPath("$[*].partnerId", containsInAnyOrder(1, 2, 1)))
+                .andExpect(jsonPath("$[0].*", hasSize(RESPONSE_FIELD_COUNT)))
+                .andExpect(jsonPath("$[0].values", equalTo(Map.of(
+                        "claim", "Gemeinsam mehr erreichen.",
+                        "companyName", "Autohaus Müller",
+                        "headline", "Jetzt vorbeikommen!"))));
+    }
+
+    @Test
+    void ak13_zentraleSetsStatusToInProduktion() throws Exception {
+        long orderId = placeOrderAndGetId("partner1", """
+                { "templateId": 1, "quantity": 500 }
+                """);
+        Instant pastUpdatedAt = Instant.parse("2020-01-01T00:00:00Z");
+        assertThat(testDataChangeRepository.changeUpdatedAt(orderId, pastUpdatedAt)).isEqualTo(1);
+
+        String response = changeStatus("zentrale", orderId, """
+                { "status": "IN_PRODUKTION" }
+                """)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(orderId))
+                .andExpect(jsonPath("$.status").value("IN_PRODUKTION"))
+                .andExpect(jsonPath("$.*", hasSize(RESPONSE_FIELD_COUNT)))
+                .andReturn().getResponse().getContentAsString();
+
+        Instant updatedAt = Instant.parse(JsonPath.read(response, "$.updatedAt"));
+        assertThat(updatedAt).isAfter(pastUpdatedAt);
+        expectOrderStatus(orderId, "IN_PRODUKTION");
+    }
+
+    @Test
+    void ak13_zentraleSetsStatusFromInProduktionToVersendet() throws Exception {
+        long orderId = placeOrderAndGetId("partner1", """
+                { "templateId": 1, "quantity": 500 }
+                """);
+        changeStatus("zentrale", orderId, """
+                { "status": "IN_PRODUKTION" }
+                """).andExpect(status().isOk());
+
+        changeStatus("zentrale", orderId, """
+                { "status": "VERSENDET" }
+                """)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("VERSENDET"));
+
+        expectOrderStatus(orderId, "VERSENDET");
+    }
+
+    @Test
+    void ak14_bestelltToVersendetIsRejected() throws Exception {
+        long orderId = placeOrderAndGetId("partner1", """
+                { "templateId": 1, "quantity": 500 }
+                """);
+
+        expectProblem(changeStatus("zentrale", orderId, """
+                { "status": "VERSENDET" }
+                """), 409, "Statuswechsel von BESTELLT nach VERSENDET ist nicht erlaubt.");
+
+        expectOrderStatus(orderId, "BESTELLT");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"BESTELLT", "IN_PRODUKTION", "VERSENDET"})
+    void ak14_versendetIsFinalState(String target) throws Exception {
+        long orderId = placeOrderAndGetId("partner1", """
+                { "templateId": 1, "quantity": 500 }
+                """);
+        changeStatus("zentrale", orderId, """
+                { "status": "IN_PRODUKTION" }
+                """).andExpect(status().isOk());
+        changeStatus("zentrale", orderId, """
+                { "status": "VERSENDET" }
+                """).andExpect(status().isOk());
+
+        expectProblem(changeStatus("zentrale", orderId, """
+                { "status": "%s" }
+                """.formatted(target)), 409, "Statuswechsel von VERSENDET nach " + target + " ist nicht erlaubt.");
+
+        expectOrderStatus(orderId, "VERSENDET");
+    }
+
+    @Test
+    void ak15_partnerCannotChangeStatus() throws Exception {
+        long orderId = placeOrderAndGetId("partner1", """
+                { "templateId": 1, "quantity": 500 }
+                """);
+
+        expectProblem(changeStatus("partner1", orderId, """
+                { "status": "IN_PRODUKTION" }
+                """), 403, "Keine Berechtigung für diese Aktion.");
+
+        expectOrderStatus(orderId, "BESTELLT");
+    }
+
+    @Test
+    void ak15_partnerGetsForbiddenEvenForUnknownOrder() throws Exception {
+        expectProblem(changeStatus("partner1", 999_999, """
+                { "status": "IN_PRODUKTION" }
+                """), 403, "Keine Berechtigung für diese Aktion.");
+    }
+
+    @Test
+    void ak17_unknownOrderReturnsNotFound() throws Exception {
+        expectProblem(changeStatus("zentrale", 999_999, """
+                { "status": "IN_PRODUKTION" }
+                """), 404, "Bestellung 999999 nicht gefunden.");
+    }
+
+    @Test
+    void ak18_unknownStatusValueIsRejected() throws Exception {
+        long orderId = placeOrderAndGetId("partner1", """
+                { "templateId": 1, "quantity": 500 }
+                """);
+
+        expectProblem(changeStatus("zentrale", orderId, """
+                { "status": "FOO" }
+                """), 400, "Request-Body ist ungültig.");
+
+        expectOrderStatus(orderId, "BESTELLT");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"{}", "{ \"status\": null }"})
+    void ak18_missingStatusIsRejected(String body) throws Exception {
+        long orderId = placeOrderAndGetId("partner1", """
+                { "templateId": 1, "quantity": 500 }
+                """);
+
+        expectProblem(changeStatus("zentrale", orderId, body), 400, "Status fehlt.");
+
+        expectOrderStatus(orderId, "BESTELLT");
     }
 }

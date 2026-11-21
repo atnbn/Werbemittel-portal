@@ -1,5 +1,6 @@
 package com.miniportal.order;
 
+import com.miniportal.common.InvalidStatusTransitionException;
 import com.miniportal.partner.Partner;
 import com.miniportal.template.Template;
 import jakarta.persistence.CascadeType;
@@ -82,6 +83,15 @@ public class Order {
             fieldValue.assignTo(this);
             fieldValues.add(fieldValue);
         });
+    }
+
+    public void changeStatus(OrderStatus target, Instant now) {
+        if (!status.canTransitionTo(target)) {
+            throw new InvalidStatusTransitionException(
+                    "Statuswechsel von " + status + " nach " + target + " ist nicht erlaubt.");
+        }
+        this.status = target;
+        this.updatedAt = now;
     }
 
     public Long getId() {

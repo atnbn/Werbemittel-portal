@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(HttpMethod.GET, "/api/partners/me").hasRole(Role.PARTNER.name())
                         .requestMatchers(HttpMethod.POST, "/api/orders").hasRole(Role.PARTNER.name())
+                        .requestMatchers(HttpMethod.PATCH, "/api/orders/*/status").hasRole(Role.ZENTRALE.name())
                         .anyRequest().authenticated())
                 .build();
     }

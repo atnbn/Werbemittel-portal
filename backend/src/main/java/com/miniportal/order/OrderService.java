@@ -9,6 +9,7 @@ import com.miniportal.template.TemplateService;
 import com.miniportal.template.TemplateValueValidator;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,15 +42,38 @@ public class OrderService {
         partner.deductBalance(price.subsidyCents());
 
         Map<String, String> snapshot = fieldValueResolver.resolve(template.getFields(), values, partner::getAttribute);
-        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
-        return orderRepository.save(new Order(partner, template, quantity, price, snapshot, now));
+        return orderRepository.save(new Order(partner, template, quantity, price, snapshot, now()));
     }
 
     @Transactional(readOnly = true)
     public Order getVisibleOrder(Long orderId, AuthenticatedUser viewer) {
         return orderRepository.findById(orderId)
                 .filter(order -> isVisibleTo(order, viewer))
-                .orElseThrow(() -> new NotFoundException("Bestellung " + orderId + " nicht gefunden."));
+                .orElseThrow(() -> orderNotFound(orderId));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Order> findVisibleOrders(AuthenticatedUser viewer) {
+        return switch (viewer.getRole()) {
+            case ZENTRALE -> orderRepository.findAllByOrderByIdAsc();
+            case PARTNER -> orderRepository.findAllByPartnerIdOrderByIdAsc(viewer.getPartnerId());
+        };
+    }
+
+    @Transactional
+    public Order changeStatus(Long orderId, OrderStatus status) {
+        Order order = orderRepository.findByIdForUpdate(orderId)
+                .orElseThrow(() -> orderNotFound(orderId));
+        order.changeStatus(status, now());
+        return order;
+    }
+
+    private static NotFoundException orderNotFound(Long orderId) {
+        return new NotFoundException("Bestellung " + orderId + " nicht gefunden.");
+    }
+
+    private static Instant now() {
+        return Instant.now().truncatedTo(ChronoUnit.MICROS);
     }
 
     private static boolean isVisibleTo(Order order, AuthenticatedUser viewer) {
