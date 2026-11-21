@@ -30,6 +30,8 @@ nachfragen**, nicht raten.
 - **Tests niemals abschwächen, löschen oder deaktivieren** (`@Disabled`, auskommentierte
   Asserts, gelockerte Erwartungen), um sie grün zu bekommen. Ist ein Test falsch, sag es
   und begründe es.
+- **Muss ein Test nach Phase 3 geändert werden, halte an**, zeige den Diff des Tests und
+  die Spec-Stelle, die ihn begründet, und warte auf Freigabe.
 - **Der Partner einer Bestellung kommt immer aus dem angemeldeten Benutzer**, nie aus dem Request.
 - **Entitäten nie direkt über die API ausgeben**, immer DTOs in der Form aus Spec, Abschnitt 9.
 
@@ -49,7 +51,8 @@ nachfragen**, nicht raten.
 - Abhängigkeitsrichtung: Fachmodule dürfen von `security` abhängen, `security` von keinem
   Fachmodul. Deshalb speichert `User` nur die `partnerId` (keine JPA-Beziehung zu `Partner`).
   Controller holen den angemeldeten Benutzer per `@AuthenticationPrincipal` und geben
-  `partnerId` an den Service weiter.
+  `partnerId` an den Service weiter. Wo die Rolle die Sichtbarkeit bestimmt (z. B. ZENTRALE
+  sieht alle Bestellungen), bekommt der Service den `AuthenticatedUser` und prüft die Rolle explizit.
 - Struktur pro Fachmodul:
   - `XxxController`: nur HTTP, Mapping auf DTOs, `@Valid`
   - `XxxService`: Ablauf, `@Transactional`, Zugriffsprüfung auf Datenebene

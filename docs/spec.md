@@ -76,7 +76,7 @@ Tests referenzieren die ID im Testnamen (z. B. `ak3_...`).
 - AK-4: Given PARTNER, When ich einen Wert für ein FIXED- oder PARTNER_DATA-Feld oder einen Key, den die Vorlage nicht hat, mitsende,
   Then 400; nichts wird gespeichert und das Guthaben bleibt unverändert.
 - AK-5: Given PARTNER, When der Wert eines EDITABLE-Felds länger als maxLength ist, Then 400; nichts wird gespeichert und das Guthaben bleibt unverändert.
-- AK-6: Given PARTNER, When Menge < 1, Then 400.
+- AK-6: Given PARTNER, When Menge < 1, Menge oder templateId fehlt oder ein Wert in values null ist, Then 400; nichts wird gespeichert.
 - AK-7: Given PARTNER mit Guthaben kleiner als der Zuschuss, When ich bestelle, Then 422 und das Guthaben bleibt unverändert.
 - AK-8: Given eine bestehende Bestellung, When sich danach der Firmenname des Partners oder der Standardwert eines Vorlagenfelds ändert,
   Then liefert `GET /api/orders/{id}` weiterhin die Werte vom Bestellzeitpunkt. (Test ändert die Daten direkt über das Repository.)
@@ -207,6 +207,7 @@ Listen von Vorlagen sind nach `id` sortiert, `fields` nach `position`.
 ```
 
 `values` enthält nur EDITABLE-Felder; fehlende EDITABLE-Felder bekommen den Standardwert.
+`values` ist optional; fehlt es, gilt `{}`. Leere Strings sind erlaubt.
 
 ### Order – Response
 

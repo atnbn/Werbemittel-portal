@@ -181,15 +181,19 @@ deutsch, da sie Fachbegriffe sind und unverändert in der API und im UI erschein
 - Daten gehen bei jedem Neustart verloren (H2 In-Memory).
 - H2 verhält sich in Details anders als eine produktive Datenbank.
 - HTTP Basic überträgt Zugangsdaten bei jedem Request und ist nur mit HTTPS vertretbar.
-- Gleichzeitige Bestellungen desselben Partners könnten das Guthaben doppelt verbrauchen.
-  Der Bestellvorgang läuft in einer Transaktion (`@Transactional`); gegen parallele
-  Zugriffe ist das allein nicht ausreichend.
+- Gleichzeitige Bestellungen desselben Partners dürfen das Guthaben nicht doppelt verbrauchen.
+  Der Bestellvorgang läuft in einer Transaktion (`@Transactional`) und lädt den Partner mit
+  einer pessimistischen Schreibsperre (`@Lock(PESSIMISTIC_WRITE)`). Parallele Bestellungen
+  desselben Partners werden dadurch serialisiert; das kostet etwas Durchsatz, ist bei einem
+  Partner mit wenigen Bestellungen aber vernachlässigbar.
 
 **Für einen Produktivbetrieb zu ändern**
 
 - PostgreSQL mit versionierten Migrationen (Flyway) statt H2 und automatisch erzeugtem Schema.
 - HTTPS und tokenbasierte Anmeldung oder Single Sign-on statt HTTP Basic.
-- Optimistic Locking (`@Version`) auf `Partner`, damit parallele Abbuchungen erkannt werden.
+- Die pessimistische Sperre auf `Partner` bleibt bestehen. Optimistic Locking (`@Version`)
+  wurde verworfen: Es würde einen zusätzlichen Fehlercode für Konflikte (z. B. 409) erfordern,
+  der nicht in der Spec steht; die Sperre verhindert Lost Updates ohne neuen Fehlercode.
 
 ## Verworfene Alternativen
 
