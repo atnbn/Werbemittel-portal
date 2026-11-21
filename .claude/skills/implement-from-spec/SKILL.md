@@ -39,6 +39,7 @@ Halte dich an CLAUDE.md. Arbeite die Phasen strikt nacheinander ab und
    (fehlende Funktion, nicht Kompilier- oder Konfigurationsfehler in anderen Teilen).
 3. Halte das Ergebnis des roten Testlaufs (Anzahl Failures und Grund je Testklasse) in
    `docs/plans/<Feature>.md` unter „Phase 3: Rot-Nachweis“ fest.
+4. Prüfe bei jedem roten Test, dass er aus dem erwarteten Grund rot ist (fehlende Umsetzung), nicht wegen eines Fehlers im Test selbst.
 
 ## Phase 4 – Umsetzen
 
