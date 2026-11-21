@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import type { ApiClient } from './api/client.ts';
 import type { MeResponse } from './api/types.ts';
-import { CatalogPage } from './catalog/CatalogPage.tsx';
 import { LoginPage } from './login/LoginPage.tsx';
 import { OrderOverviewPage } from './orders/OrderOverviewPage.tsx';
+import { PartnerPage } from './partner/PartnerPage.tsx';
 
 // Zugangsdaten liegen nur im Closure von `api`, also nur im Speicher (Spec, Abschnitt 11).
 interface Session {
@@ -27,7 +27,7 @@ export function App() {
       {session === null ? (
         <LoginPage onLogin={(api, me) => setSession({ api, me })} />
       ) : session.me.role === 'PARTNER' ? (
-        <CatalogPage api={session.api} />
+        <PartnerPage api={session.api} />
       ) : (
         <OrderOverviewPage />
       )}

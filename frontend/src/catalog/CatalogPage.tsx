@@ -6,6 +6,7 @@ import { formatCents } from '../format/money.ts';
 
 interface CatalogPageProps {
   api: ApiClient;
+  onPersonalize: (template: Template, partner: Partner) => void;
 }
 
 interface CatalogData {
@@ -13,7 +14,7 @@ interface CatalogData {
   partner: Partner;
 }
 
-export function CatalogPage({ api }: CatalogPageProps) {
+export function CatalogPage({ api, onPersonalize }: CatalogPageProps) {
   const [data, setData] = useState<CatalogData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,6 +49,7 @@ export function CatalogPage({ api }: CatalogPageProps) {
                 <th>Typ</th>
                 <th>Stückpreis</th>
                 <th>Zuschussquote</th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -57,6 +59,11 @@ export function CatalogPage({ api }: CatalogPageProps) {
                   <td>{template.type}</td>
                   <td>{formatCents(template.unitPriceCents)}</td>
                   <td>{`${template.subsidyPercent} %`}</td>
+                  <td>
+                    <button type="button" onClick={() => onPersonalize(template, data.partner)}>
+                      Personalisieren
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

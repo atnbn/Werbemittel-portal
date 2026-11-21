@@ -6,7 +6,12 @@ import { partner1, seedTemplates } from '../test/seedData.ts';
 import { CatalogPage } from './CatalogPage.tsx';
 
 function renderCatalog() {
-  render(<CatalogPage api={createApiClient({ username: 'partner1', password: 'demo' })} />);
+  render(
+    <CatalogPage
+      api={createApiClient({ username: 'partner1', password: 'demo' })}
+      onPersonalize={() => {}}
+    />,
+  );
 }
 
 describe('CatalogPage', () => {
@@ -30,7 +35,7 @@ describe('CatalogPage', () => {
     for (const [name, type, unitPrice, subsidy] of expected) {
       const row = await screen.findByRole('row', { name: new RegExp(name ?? '') });
       const cells = within(row).getAllByRole('cell').map((cell) => cell.textContent);
-      expect(cells).toEqual([name, type, unitPrice, subsidy]);
+      expect(cells).toEqual([name, type, unitPrice, subsidy, 'Personalisieren']);
     }
     expect(screen.getAllByRole('row')).toHaveLength(1 + seedTemplates.length);
   });

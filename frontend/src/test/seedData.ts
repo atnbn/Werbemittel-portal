@@ -1,5 +1,5 @@
 // Ausschnitt der Seed-Daten aus Spec, Abschnitt 10, für Komponententests.
-import type { Partner, Template } from '../api/types.ts';
+import type { Order, Partner, Template } from '../api/types.ts';
 
 export const partner1: Partner = {
   id: 1,
@@ -111,3 +111,41 @@ export const seedTemplates: Template[] = [
     ],
   },
 ];
+
+export const partner2: Partner = {
+  id: 2,
+  companyName: 'Fahrrad Schmidt',
+  street: 'Bahnhofstr. 5',
+  zip: '96047',
+  city: 'Bamberg',
+  phone: '0951 98765',
+  balanceCents: 500,
+};
+
+export function seedTemplate(id: number): Template {
+  const template = seedTemplates.find((t) => t.id === id);
+  if (!template) {
+    throw new Error(`Keine Seed-Vorlage mit id ${id}`);
+  }
+  return template;
+}
+
+/** Beispiel aus Spec, Abschnitt 9 (Order – Response). */
+export const order7: Order = {
+  id: 7,
+  templateId: 1,
+  templateName: 'Flyer Frühling',
+  partnerId: 1,
+  quantity: 500,
+  status: 'BESTELLT',
+  totalCents: 6000,
+  subsidyCents: 3000,
+  ownShareCents: 3000,
+  values: {
+    claim: 'Gemeinsam mehr erreichen.',
+    companyName: 'Autohaus Müller',
+    headline: 'Frühlingsaktion!',
+  },
+  createdAt: '2026-11-21T10:00:00Z',
+  updatedAt: '2026-11-21T10:00:00Z',
+};

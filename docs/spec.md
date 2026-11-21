@@ -302,7 +302,7 @@ Schlägt ein API-Aufruf fehl, zeigt die Seite `detail` aus der Fehlerantwort an.
 ### Tests
 
 - Reine Funktionen mit Vitest: Euro-Formatierung, Preisvorschau (Beispiele 1 und 2 aus Abschnitt 5), Zusammensetzen der Vorschau, nächster erlaubter Status.
-- Komponenten mit Vitest + Testing Library: UI-1, UI-2, UI-4, UI-8, UI-9.
+- Komponenten mit Vitest + Testing Library: jedes UI-AK hat mindestens einen Komponententest.
 
 ## 12. Nicht im Umfang
 
