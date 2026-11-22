@@ -60,9 +60,9 @@ export function OrderOverviewPage({ api }: OrderOverviewPageProps) {
               <th>Firmenname</th>
               <th>Vorlage</th>
               <th>Status</th>
-              <th>Gesamtpreis</th>
-              <th>Zuschuss</th>
-              <th>Eigenanteil</th>
+              <th className="amount">Gesamtpreis</th>
+              <th className="amount">Zuschuss</th>
+              <th className="amount">Eigenanteil</th>
               <th />
             </tr>
           </thead>
@@ -74,9 +74,9 @@ export function OrderOverviewPage({ api }: OrderOverviewPageProps) {
                   <td>{order.values['companyName'] ?? ''}</td>
                   <td>{order.templateName}</td>
                   <td>{order.status}</td>
-                  <td>{formatCents(order.totalCents)}</td>
-                  <td>{formatCents(order.subsidyCents)}</td>
-                  <td>{formatCents(order.ownShareCents)}</td>
+                  <td className="amount">{formatCents(order.totalCents)}</td>
+                  <td className="amount">{formatCents(order.subsidyCents)}</td>
+                  <td className="amount">{formatCents(order.ownShareCents)}</td>
                   <td>
                     {next && (
                       <button

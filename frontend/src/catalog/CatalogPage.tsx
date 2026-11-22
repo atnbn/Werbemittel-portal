@@ -41,14 +41,14 @@ export function CatalogPage({ api, onPersonalize }: CatalogPageProps) {
         <p>Lädt …</p>
       ) : (
         <>
-          <p>Guthaben: {formatCents(data.partner.balanceCents)}</p>
+          <p className="balance">Guthaben: {formatCents(data.partner.balanceCents)}</p>
           <table>
             <thead>
               <tr>
                 <th>Name</th>
                 <th>Typ</th>
-                <th>Stückpreis</th>
-                <th>Zuschussquote</th>
+                <th className="amount">Stückpreis</th>
+                <th className="amount">Zuschussquote</th>
                 <th />
               </tr>
             </thead>
@@ -57,8 +57,8 @@ export function CatalogPage({ api, onPersonalize }: CatalogPageProps) {
                 <tr key={template.id}>
                   <td>{template.name}</td>
                   <td>{template.type}</td>
-                  <td>{formatCents(template.unitPriceCents)}</td>
-                  <td>{`${template.subsidyPercent} %`}</td>
+                  <td className="amount">{formatCents(template.unitPriceCents)}</td>
+                  <td className="amount">{`${template.subsidyPercent} %`}</td>
                   <td>
                     <button type="button" onClick={() => onPersonalize(template, data.partner)}>
                       Personalisieren

@@ -15,8 +15,8 @@ export function App() {
   const [session, setSession] = useState<Session | null>(null);
 
   return (
-    <main>
-      <header>
+    <main className="app">
+      <header className="app-header">
         <h1>Mini-Marketingportal</h1>
         {session && (
           <button type="button" onClick={() => setSession(null)}>

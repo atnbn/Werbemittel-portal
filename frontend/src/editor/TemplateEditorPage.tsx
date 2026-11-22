@@ -47,7 +47,7 @@ export function TemplateEditorPage({ api, template, partner, onOrdered }: Templa
   return (
     <section>
       <h2>{template.name}</h2>
-      <form onSubmit={handleSubmit}>
+      <form className="editor" onSubmit={handleSubmit}>
         {sortedFields(template).map((field) =>
           field.fieldType === 'EDITABLE' ? (
             <p key={field.key}>
@@ -60,7 +60,9 @@ export function TemplateEditorPage({ api, template, partner, onOrdered }: Templa
                 />
               </label>
               {field.maxLength !== null && (
-                <span>{`${(values[field.key] ?? '').length}/${field.maxLength}`}</span>
+                <span className="char-count">
+                  {`${(values[field.key] ?? '').length}/${field.maxLength}`}
+                </span>
               )}
             </p>
           ) : (
@@ -73,7 +75,7 @@ export function TemplateEditorPage({ api, template, partner, onOrdered }: Templa
           ),
         )}
 
-        <ol aria-label="Vorschau">
+        <ol className="preview" aria-label="Vorschau">
           {composePreview(template, partner, values).map((value, index) => (
             <li key={index}>{value}</li>
           ))}
@@ -95,7 +97,7 @@ export function TemplateEditorPage({ api, template, partner, onOrdered }: Templa
             <p>Zuschuss: {formatCents(price.subsidyCents)}</p>
             <p>Eigenanteil: {formatCents(price.ownShareCents)}</p>
             {partner.balanceCents < price.subsidyCents && (
-              <p>Guthaben reicht nicht für den Zuschuss.</p>
+              <p className="warning">Guthaben reicht nicht für den Zuschuss.</p>
             )}
           </>
         )}

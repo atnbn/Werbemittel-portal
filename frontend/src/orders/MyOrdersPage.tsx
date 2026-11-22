@@ -39,20 +39,20 @@ export function MyOrdersPage({ api }: MyOrdersPageProps) {
           <thead>
             <tr>
               <th>Vorlage</th>
-              <th>Menge</th>
+              <th className="amount">Menge</th>
               <th>Status</th>
-              <th>Zuschuss</th>
-              <th>Eigenanteil</th>
+              <th className="amount">Zuschuss</th>
+              <th className="amount">Eigenanteil</th>
             </tr>
           </thead>
           <tbody>
             {orders.map((order) => (
               <tr key={order.id}>
                 <td>{order.templateName}</td>
-                <td>{order.quantity}</td>
+                <td className="amount">{order.quantity}</td>
                 <td>{order.status}</td>
-                <td>{formatCents(order.subsidyCents)}</td>
-                <td>{formatCents(order.ownShareCents)}</td>
+                <td className="amount">{formatCents(order.subsidyCents)}</td>
+                <td className="amount">{formatCents(order.ownShareCents)}</td>
               </tr>
             ))}
           </tbody>

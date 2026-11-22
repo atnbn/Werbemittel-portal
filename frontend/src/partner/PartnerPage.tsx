@@ -20,7 +20,7 @@ export function PartnerPage({ api }: PartnerPageProps) {
 
   return (
     <>
-      <nav>
+      <nav className="app-nav">
         <button type="button" onClick={() => setView({ name: 'catalog' })}>
           Katalog
         </button>
