@@ -19,6 +19,7 @@ function stubLoginAs(username: string, role: Role) {
     'GET /api/me': () => jsonResponse(200, { username, role }),
     'GET /api/templates': () => jsonResponse(200, seedTemplates),
     'GET /api/partners/me': () => jsonResponse(200, partner1),
+    'GET /api/orders': () => jsonResponse(200, []),
   });
 }
 

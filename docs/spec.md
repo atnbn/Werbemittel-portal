@@ -37,6 +37,8 @@ Felder ändern können, die die Zentrale freigegeben hat.
 | PARTNER_DATA | automatisch aus Stammdaten (`partnerAttribute`, z. B. `companyName`) | nein                    |
 | EDITABLE     | Partner, sonst Standardwert                                          | ja, bis `maxLength`     |
 
+Jede Vorlage hat ein PARTNER_DATA-Feld mit key `companyName` und partnerAttribute `companyName`.
+
 ## 5. Berechnung einer Bestellung
 
 - Gesamtpreis = Menge × Stückpreis

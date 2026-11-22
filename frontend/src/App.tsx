@@ -29,7 +29,7 @@ export function App() {
       ) : session.me.role === 'PARTNER' ? (
         <PartnerPage api={session.api} />
       ) : (
-        <OrderOverviewPage />
+        <OrderOverviewPage api={session.api} />
       )}
     </main>
   );
