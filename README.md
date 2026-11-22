@@ -54,8 +54,8 @@ Demo-Zugänge (Passwort jeweils `demo`):
 
 ## Tests und CI
 
-- Backend: Unit- und Integrationstests mit JUnit und MockMvc ([79] Tests), `./mvnw verify`
-- Frontend: Vitest und Testing Library ([42] Tests), `npm test`
+- Backend: Unit- und Integrationstests mit JUnit und MockMvc ([9 Tests), `./mvnw verify`
+- Frontend: Vitest und Testing Library (42 Tests), `npm test`
 - GitHub Actions führt bei jedem Push beide Suiten und den Frontend-Build aus.
 - Vor jedem Feature-Abschluss manuell durchgespielt: Login, Bestellen, 422 bei zu wenig Guthaben, Umlaute, Statuswechsel.
 
